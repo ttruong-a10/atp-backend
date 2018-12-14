@@ -86,10 +86,11 @@ class CourseViewSet(viewsets.ModelViewSet):
     # only show the course owned by current user IF not SuperUser
     def get_queryset(self):
         owner = self.request.user
+        queryset = self.queryset.all()
         if owner.is_superuser: 
-            return self.queryset
+            return queryset
         else:
-            return self.queryset.filter(owner=owner)
+            return queryset.filter(owner=owner)
     
     # set current user as owner
     def perform_create(self, serializer):
@@ -103,10 +104,11 @@ class PodViewSet(viewsets.ModelViewSet):
     # only show the course owned by current user IF not SuperUser
     def get_queryset(self):
         owner = self.request.user
+        queryset = self.queryset.all()
         if owner.is_superuser: 
-            return self.queryset
+            return queryset
         else:
-            return self.queryset.filter(owner=owner)
+            return queryset.filter(owner=owner)
 
 
 class BlueprintViewSet(viewsets.ModelViewSet):

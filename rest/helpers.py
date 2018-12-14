@@ -19,9 +19,9 @@ def generate_random_token(size):
 
 
 def iterate_pod_number(course):
-    pods = course.get_pods_list()
-    if len(pods) == 0:
+    total_pods = course.get_total_number_pods()
+    if total_pods == 0:
         return 1 
     else:
         # iterate from last pod number
-        return pods.order_by('-number')[0].number + 1 
+        return course.pods.order_by('-number')[0].number + 1 

@@ -17,7 +17,7 @@ class PodAdmin(admin.ModelAdmin):
 
 
 class CourseAdmin(admin.ModelAdmin):
-    readonly_fields=('owner',)
+    readonly_fields=('owner', 'short_name', 'slug', 'created_at')
 
     # Set current user as owner
     def save_model(self, request, obj, form, change):

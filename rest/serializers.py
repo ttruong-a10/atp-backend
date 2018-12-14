@@ -9,7 +9,7 @@ from .models.others import Student, AccessToken
 class PodSerializer(serializers.ModelSerializer):
     class Meta:
         extra_kwargs = {
-            'access_token': { 'write_only': True }
+            'access_token': { 'write_only': True },
         }
         fields = (
             'id',
@@ -28,7 +28,6 @@ class PodSerializer(serializers.ModelSerializer):
         )
         model = Pod
 
-
 class CourseSerializer(serializers.ModelSerializer):
     # Shows all pod objects
     # pods = PodSerializer(many=True, read_only=True)
@@ -38,6 +37,9 @@ class CourseSerializer(serializers.ModelSerializer):
         read_only=True,
         view_name='apiv1:pod-detail'
     )
+    owner = serializers.ReadOnlyField(source='owner.username')
+    total_pods = serializers.ReadOnlyField(source='get_total_number_pods')
+    pod_statuses = serializers.ReadOnlyField(source='get_pod_statuses')
 
     class Meta:
         fields = (
@@ -48,6 +50,8 @@ class CourseSerializer(serializers.ModelSerializer):
             'owner',
             'created_at',
             'pods',
+            'total_pods',
+            'pod_statuses',
         )
         model = Course
 

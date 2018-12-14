@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from rest import helpers
 from rest import choices
@@ -45,8 +46,8 @@ class Course(models.Model):
     def __str__(self):
         return self.name
         
-    def get_pods_list(self):
-        return self.pods.all()
+    def get_total_number_pods(self):
+        return len(self.pods.all())
     
     def get_absolute_url(self):
         return reverse('courses:course_detail', args=[self.slug])
@@ -57,10 +58,14 @@ class Course(models.Model):
         else:
             return True
             
-    def get_pods_status_started(self):
-        pods = self.pods.filter(status='started')
-        number_of_started = len(pods)
-        return number_of_started
+    def get_pod_statuses(self):
+        status = {
+          'started': len(self.pods.filter(status='started')),
+          'stopped': len(self.pods.filter(status='stopped')),
+          'processing': len(self.pods.filter(Q(status='starting') | Q(status='stopping'))),
+          'undeployed': len(self.pods.filter(status='undeployed'))
+        }
+        return status
         
     def get_pods_status_stopped(self):
         pods = self.pods.filter(status='stopped')
