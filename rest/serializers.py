@@ -56,6 +56,10 @@ class CourseSerializer(serializers.ModelSerializer):
         model = Course
 
 
+class CourseNameSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+
+
 class BlueprintSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (

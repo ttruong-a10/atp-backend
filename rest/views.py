@@ -4,7 +4,7 @@ from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework import permissions 
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -14,6 +14,7 @@ from .models.course import Course
 from .models.blueprint import Blueprint
 from .models.others import Student, AccessToken
 from . import serializers
+from . import azure
 
 
 ''' Class Base Views
@@ -82,6 +83,16 @@ class CourseViewSet(viewsets.ModelViewSet):
             course.pods.all(), many=True
         )
         return Response(serializer.data)
+
+    @list_route(methods=['post'])
+    def checkExists(self, request, pk=None):
+        serializer = serializers.CourseNameSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        resource_client = azure.get_client('resource')
+        rg = serializer.data['name']
+        print(rg)
+        result = azure.check_resource_group_exist(resource_client, rg)
+        return Response(result)
 
     # only show the course owned by current user IF not SuperUser
     def get_queryset(self):

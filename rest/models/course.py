@@ -7,12 +7,16 @@ from django.db.models import Q
 from rest import helpers
 from rest import choices
 
+from rest import validators
+
+
 
 class Course(models.Model):
     name = models.CharField(
         max_length=60, 
         verbose_name="Course Title", 
-        unique=True
+        unique=True,
+        validators=[validators.validate_course_name]
     )
     short_name = models.CharField(
         max_length=60, 
@@ -37,7 +41,7 @@ class Course(models.Model):
         if not self.id:
             # Append random id suffix
             self.short_name = self.name
-            self.name = helpers.append_random_haiku(self.name)
+            # self.name = helpers.append_random_haiku(self.name)
             # Set slug
             self.slug = slugify(self.name)
         
