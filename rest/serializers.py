@@ -45,7 +45,6 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
-            'short_name',
             'slug',
             'owner',
             'created_at',

@@ -1,5 +1,6 @@
 # from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 from rest_framework import generics
 from rest_framework import viewsets
 from rest_framework import status
@@ -15,6 +16,7 @@ from .models.blueprint import Blueprint
 from .models.others import Student, AccessToken
 from . import serializers
 from . import azure
+from . import validators
 
 
 ''' Class Base Views
@@ -88,11 +90,17 @@ class CourseViewSet(viewsets.ModelViewSet):
     def checkExists(self, request, pk=None):
         serializer = serializers.CourseNameSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        resource_client = azure.get_client('resource')
         rg = serializer.data['name']
-        print(rg)
-        result = azure.check_resource_group_exist(resource_client, rg)
-        return Response(result)
+        # resource_client = azure.get_client('resource')
+        # result = azure.check_resource_group_exist(resource_client, rg)
+        try:
+            validators.validate_course_name(rg)
+        except ValidationError:
+            # Name already exists!
+            return Response(True)
+        else:
+            # Name has not exist 
+            return Response(False)
 
     # only show the course owned by current user IF not SuperUser
     def get_queryset(self):

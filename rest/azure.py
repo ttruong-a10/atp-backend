@@ -30,6 +30,9 @@ def cloudError(func):
     except CloudError:
         print('{} Failed'.format(func_name), traceback.format_exc(), sep='\n')
         raise 
+    except:
+        print('{} Unknown Error'.format(func_name), traceback.format_exc(), sep='\n')
+        raise
     else:
       print('{} ran successfully!'.format(func_name))
       return async_result
