@@ -108,3 +108,9 @@ class AccessTokenSerializer(serializers.ModelSerializer):
             'created_at',
         )
         model = AccessToken
+
+
+class ImageSerializer(serializers.Serializer):
+    id = serializers.CharField(max_length=100)
+    name = serializers.CharField(max_length=100)
+    location = serializers.CharField(max_length=100)

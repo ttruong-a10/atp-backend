@@ -32,5 +32,6 @@ urlpatterns = [
     path('api-auth/', include(('rest_framework.urls'), namespace='rest_framework')),
     # path('api/v1/myapp/', include(('rest.urls', 'myapp'), namespace='myapp')),
     path('api/v1/', include((router.urls, 'rest'), namespace='apiv1')),
+    path('api/v1/', include(('rest.urls', 'atp'), namespace='atp')),
     path('rest-auth/', include('rest_auth.urls')),
 ]

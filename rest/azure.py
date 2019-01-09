@@ -50,7 +50,7 @@ def get_credentials():
   
   #subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
   #subscription_id = "6ae7c2c3-63d3-4fb6-952e-f7216b6523ab"
-  subscription_id = "2f566b91-b5cb-40f7-9528-a335aa72958f"
+  subscription_id = "2b00f0fb-8864-4952-971f-86a58a102ea4"
   credentials = ServicePrincipalCredentials(
       client_id="90aff430-448c-46d9-845f-5f0f77ff99a5",
       secret="Z1BG3GbDRZppa4AXUetQOfPXssOuIVulugTNONrl9tQ=",
@@ -96,3 +96,7 @@ def get_client(client_type):
 def check_resource_group_exist(resource_client, rg):
   return resource_client.resource_groups.check_existence(rg)
       
+
+@cloudError
+def get_images(compute_client):
+  return compute_client.images.list() 

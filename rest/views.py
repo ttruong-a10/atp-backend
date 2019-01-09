@@ -147,3 +147,14 @@ class StudentViewSet(viewsets.ModelViewSet):
 class AccessTokenViewSet(viewsets.ModelViewSet):
     queryset = AccessToken.objects.all()
     serializer_class = serializers.AccessTokenSerializer
+
+class ListImage(APIView):
+    def get(self, request, format=None, *args, **kwargs):
+        location = kwargs.get('location')
+        compute_client = azure.get_client('compute')
+        images = azure.get_images(compute_client)
+        if location:
+            images = list(filter(lambda x: x.location==location, images))
+        serializer = serializers.ImageSerializer(images, many=True)
+        return Response(serializer.data)
+
