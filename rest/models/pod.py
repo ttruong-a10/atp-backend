@@ -69,7 +69,7 @@ class Pod(models.Model):
         # Newly created object
         if not self.id:
              # Append random id suffix
-            self.name = helpers.append_random_haiku(self.name)
+            # self.name = helpers.append_random_haiku(self.name)
             # Set slug
             self.slug = slugify(self.name)
             # Iterate pod number

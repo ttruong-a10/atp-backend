@@ -35,17 +35,17 @@ class AccessToken(models.Model):
         max_length=100, 
         unique=True
     )
-    key = models.CharField(
-        max_length=64, 
-        editable=False,
-        unique=True
-    )
     start_date = models.DateTimeField(
         blank=True, null=True
     )
     end_date = models.DateTimeField(
         blank=True, null=True
     )  
+    key = models.CharField(
+        max_length=64, 
+        editable=False,
+        unique=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
