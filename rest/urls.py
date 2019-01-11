@@ -9,4 +9,6 @@ urlpatterns = [
     # path('<course_pk>/pod/<int:pk>/', views.RetrieveUpdateDestroyPod.as_view(), name='pod_detail'),
     path('images/', views.ListImage.as_view(), name='image_list'),
     path('images/<location>/', views.ListImage.as_view(), name='image_list'),
+    path('sizes/', views.ListVmSize.as_view(), name='image_list'),
+    path('sizes/<location>/', views.ListVmSize.as_view(), name='vmsize_list'),
 ]

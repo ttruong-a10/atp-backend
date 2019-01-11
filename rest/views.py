@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from .models.pod import Pod
 from .models.course import Course
 from .models.blueprint import Blueprint
-from .models.others import Student, AccessToken
+from .models.others import Student, AccessToken, VmSize
 from . import serializers
 from . import azure
 from . import validators
@@ -148,6 +148,7 @@ class AccessTokenViewSet(viewsets.ModelViewSet):
     queryset = AccessToken.objects.all()
     serializer_class = serializers.AccessTokenSerializer
 
+
 class ListImage(APIView):
     def get(self, request, format=None, *args, **kwargs):
         location = kwargs.get('location')
@@ -158,3 +159,13 @@ class ListImage(APIView):
         serializer = serializers.ImageSerializer(images, many=True)
         return Response(serializer.data)
 
+
+class ListVmSize(APIView):
+    def get(self, request, format=None, *args, **kwargs):
+        location = kwargs.get('location')
+        queryset = VmSize.objects.all()
+        if location:
+            queryset = queryset.filter(location=location)
+
+        serializer = serializers.VmSizeSerializer(queryset, many=True)
+        return Response(serializer.data)

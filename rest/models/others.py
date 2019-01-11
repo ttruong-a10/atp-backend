@@ -55,3 +55,16 @@ class AccessToken(models.Model):
         if not self.pk:
             self.key = helpers.generate_random_token(16)
         super(AccessToken, self).save(*args, **kwargs)
+
+
+class VmSize(models.Model):
+    name = models.CharField(max_length=30)
+    location = models.CharField(max_length=50)
+    vcpu= models.IntegerField(verbose_name="vCPU")
+    memory_gb = models.FloatField(verbose_name="Memory (GB)")
+            
+    class Meta:
+        unique_together = ('name', 'location')
+        
+    def __str__(self):
+        return '{}'.format(self.name)

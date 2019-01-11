@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models.pod import Pod
 from .models.course import Course
 from .models.blueprint import Blueprint
-from .models.others import AccessToken, Student
+from .models.others import AccessToken, Student, VmSize
 
 
 class PodAdmin(admin.ModelAdmin):
@@ -43,3 +43,4 @@ admin.site.register(AccessToken, AccessTokenAdmin)
 admin.site.register(Blueprint, BlueprintAdmin)
 admin.site.register(Course, CourseAdmin)
 admin.site.register(Student)
+admin.site.register(VmSize)

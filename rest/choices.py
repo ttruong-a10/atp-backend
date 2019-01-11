@@ -9,13 +9,13 @@ TEMPLATE = (
 ) 
 
 CLOUD_REGION = (
-    #('westus', 'US West'),
-    ('westus2', 'US West 2'),
+    ('westus', 'US West'),
+    # ('westus2', 'US West 2'),
     #('centralus', 'US Central'),
-    #('eastus', 'US East'),
+    ('eastus', 'US East'),
     #('eastus2', 'US East 2'),
     #('eastasia', 'Asia East'),
-    ('southeastasia', 'Asia Southeast'),
+    # ('southeastasia', 'Asia Southeast'),
     #('northcentralus', 'US North Central'),
     #('southcentralus', 'US South Central'),
     ('westeurope', 'Europe West'),

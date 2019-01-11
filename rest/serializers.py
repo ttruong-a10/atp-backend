@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models.pod import Pod
 from .models.course import Course
 from .models.blueprint import Blueprint
-from .models.others import Student, AccessToken
+from .models.others import Student, AccessToken, VmSize
 
 
 class PodSerializer(serializers.ModelSerializer):
@@ -114,3 +114,15 @@ class ImageSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=100)
     name = serializers.CharField(max_length=100)
     location = serializers.CharField(max_length=100)
+
+
+class VmSizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            'id',
+            'name',
+            'location',
+            'vcpu',
+            'memory_gb',
+        )
+        model = VmSize
