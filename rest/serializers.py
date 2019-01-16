@@ -6,11 +6,32 @@ from .models.blueprint import Blueprint
 from .models.others import Student, AccessToken, VmSize
 
 
-class PodSerializer(serializers.ModelSerializer):
+class AccessTokenSerializer(serializers.ModelSerializer):
+    pod = serializers.HyperlinkedRelatedField(
+        many=True, 
+        read_only=True,
+        view_name='apiv1:pod-detail'
+    )
     class Meta:
-        extra_kwargs = {
-            'access_token': { 'write_only': True },
-        }
+        fields = (
+            'id',
+            'name',
+            'key',
+            'start_date',
+            'end_date',
+            'pod',
+            'created_at',
+        )
+        model = AccessToken
+
+
+class PodSerializer(serializers.ModelSerializer):
+    access_token = AccessTokenSerializer(read_only=True) 
+
+    class Meta:
+        # extra_kwargs = {
+        #     'access_token': { 'write_only': True },
+        # }
         fields = (
             'id',
             'name',
@@ -90,24 +111,6 @@ class StudentSerializer(serializers.ModelSerializer):
             'created_at',
         )
         model = Student
-
-
-class AccessTokenSerializer(serializers.ModelSerializer):
-    pod = serializers.HyperlinkedRelatedField(
-        many=True, 
-        read_only=True,
-        view_name='apiv1:pod-detail'
-    )
-    class Meta:
-        fields = (
-            'id',
-            'name',
-            'start_date',
-            'end_date',
-            'pod',
-            'created_at',
-        )
-        model = AccessToken
 
 
 class ImageSerializer(serializers.Serializer):

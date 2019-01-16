@@ -74,20 +74,24 @@ class RetrieveUpdateDestroyPod(generics.RetrieveUpdateDestroyAPIView):
 
 # View Sets
 class CourseViewSet(viewsets.ModelViewSet):
+    lookup_field = 'slug'
     permission_classes = (permissions.DjangoModelPermissions,)
     queryset = Course.objects.all()
     serializer_class = serializers.CourseSerializer
 
-    @detail_route(methods=['get'])
-    def pods(self, request, pk=None):
+    @detail_route(methods=['get'], url_path='pods',)
+    def pods(self, request, slug, pk=None, pod_number=None):
         course = self.get_object()
+        serializer_context = {
+            'request': request,
+        }
         serializer = serializers.PodSerializer(
-            course.pods.all(), many=True
+            course.pods.all(), many=True, context=serializer_context
         )
         return Response(serializer.data)
 
     @list_route(methods=['post'])
-    def checkExists(self, request, pk=None):
+    def checkNameExists(self, request, pk=None):
         serializer = serializers.CourseNameSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         rg = serializer.data['name']
