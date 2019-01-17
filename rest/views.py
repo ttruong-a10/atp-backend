@@ -16,6 +16,7 @@ from .models.blueprint import Blueprint
 from .models.others import Student, AccessToken, VmSize
 from . import serializers
 from . import azure
+from . import azure_wrapper
 from . import validators
 
 
@@ -90,7 +91,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         )
         return Response(serializer.data)
 
-    @list_route(methods=['post'])
+    @list_route(methods=['post'], url_path='check-name-exists')
     def checkNameExists(self, request, pk=None):
         serializer = serializers.CourseNameSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -105,6 +106,21 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             # Name has not exist 
             return Response(False)
+
+    @detail_route(methods=['post'], url_path='action/start')
+    def startCourse(self, request, slug ):
+        course = get_object_or_404(Course, slug=slug)
+
+        pods_queryset = course.get_pods_list()
+        try:
+            for pod in pods_queryset:
+                azure_wrapper.startPod(pod)
+        except:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+      
 
     # only show the course owned by current user IF not SuperUser
     def get_queryset(self):

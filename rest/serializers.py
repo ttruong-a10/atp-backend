@@ -38,6 +38,10 @@ class PodSerializer(serializers.ModelSerializer):
             'slug',
             'number',
             'course',
+            'location',
+            'image_src',
+            'vm_size',
+            'allow_internet_outbound',
             'access_token',
             'blueprint',
             'status',
@@ -79,6 +83,12 @@ class CourseSerializer(serializers.ModelSerializer):
 class CourseNameSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
 
+
+class CourseActionSerializer(serializers.Serializer):
+    action = serializers.CharField(max_length=50)
+    result = serializers.CharField(max_length=50)
+    errorLevel = serializers.ChoiceField(choices=['info', 'warn', 'error'])
+      
 
 class BlueprintSerializer(serializers.ModelSerializer):
     class Meta:

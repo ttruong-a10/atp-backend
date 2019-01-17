@@ -44,6 +44,9 @@ class Course(models.Model):
         
     def get_total_number_pods(self):
         return len(self.pods.all())
+
+    def get_pods_list(self):
+        return self.pods.all()
     
     def get_absolute_url(self):
         return reverse('courses:course_detail', args=[self.slug])

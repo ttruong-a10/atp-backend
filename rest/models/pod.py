@@ -28,12 +28,32 @@ class Pod(models.Model):
         on_delete=models.CASCADE, 
         related_name="pods"
     )
+    location = models.CharField(
+        max_length=50, 
+        verbose_name='Cloud Region',
+    ) 
+
+    vm_size = models.CharField(
+        max_length=100, 
+        blank=True, null=True,
+        verbose_name="Azure VM Size"
+    )
+    image_src = models.CharField(
+        max_length=300, 
+        blank=True, null=True,
+        verbose_name="Azure Image"
+    )
+    allow_internet_outbound = models.BooleanField(
+        default=False,
+        verbose_name="Allow Outbound Internet Access"
+    )
     blueprint = models.ForeignKey(
         'Blueprint',
         on_delete=models.SET_NULL,
         related_name='pod',
         null=True
     )
+
     status = models.CharField(
         max_length=100,
         choices=choices.STATUS, 
@@ -86,6 +106,11 @@ class Pod(models.Model):
         
     def get_short_name(self):
         return self.name.split("_")[-1]
+
+    def update_status(self, status):
+        self.status = status
+        self.save()
+        return status
         
 
 # This allows the related object to be deleted when Pod is deleted

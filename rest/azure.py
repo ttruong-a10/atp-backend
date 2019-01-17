@@ -14,7 +14,9 @@ from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.commerce import UsageManagementClient
+from azure.mgmt.resource.resources.models import DeploymentMode
 from msrestazure.azure_exceptions import CloudError
+
 
 
 ### Decorators ###
@@ -118,3 +120,68 @@ def get_skus_by_location(compute_client, location):
          Get skus for a location
     '''
     return compute_client.resource_skus.list() 
+
+
+@cloudError
+def create_resource_group(resource_client, rg, params):
+    '''
+         Get skus for a location
+         parameters = {
+            'location': string,
+            'tags': {
+                'owner': user #example
+            }
+    '''
+    return resource_client.resource_groups.create_or_update(rg, params) 
+
+
+@cloudError
+def create_vm_from_template(compute_client, resource_client, rg, params):
+    from .azure_wrapper import get_template_json
+    TEMPLATE = 'Standard_Vm_Template.json' 
+
+    '''
+        Deploy VM from ARM Template
+        params: {
+            trainerId: string,
+            virtualMachineName: string, 
+            location: string,
+            image_id: string,
+            virtualMachineSize: string,
+            dnsLabelPrefix: string,
+            allowInternetOutbound: string
+        }
+    '''
+
+    # If RG doesn't exist, create it
+    if not check_resource_group_exist(resource_client, rg):
+        rg_params = {
+            'location': params['location'],
+            'tag': {
+                'owner': params['trainerId']
+            }
+        }
+        create_resource_group(resource_client, rg, rg_params)
+
+    # Create the VM in RG
+    params_dict_of_dict = {k: {'value': v} for k, v in params.items()}
+
+    deployment_properties = {
+        'mode': DeploymentMode.incremental,
+        'template': get_template_json(TEMPLATE),
+        'parameters': params_dict_of_dict
+    }
+
+    return resource_client.deployments.create_or_update(
+        rg,
+        params['virtualMachineName'],
+        deployment_properties
+    )
+
+
+@cloudError
+def start_vm(compute_client, rg, vm_name):
+    '''
+        Start Virtual Machine
+    '''
+    return compute_client.virtual_machines.start(rg, vm_name)

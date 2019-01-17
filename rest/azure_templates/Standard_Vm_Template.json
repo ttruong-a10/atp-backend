@@ -1,0 +1,349 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string"
+        },
+        "imageId": {
+            "type": "string"
+        },
+        "virtualMachineName": {
+            "type": "string"
+        },
+        "dnsLabelPrefix": {
+            "type": "string"
+        },
+        "virtualMachineSize": {
+            "type": "string"
+        },
+        "trainerId": {
+            "type": "string"
+        },
+        "allowInternetOutbound": {
+            "type": "bool",
+            "defaultValue": "[bool('false')]"
+        },
+        "hardDiskType": {
+            "type": "string",
+			"defaultValue": "Standard_LRS"
+        },
+        "adminUsername": {
+            "type": "string",
+			"defaultValue": "instructor"
+        },
+        "adminPassword": {
+            "type": "securestring",
+			"defaultValue": "kSN%E'NP3@mWrY$)~]&@7dk8#$;X!z"
+        },
+        "addressPrefix": {
+            "type": "string",
+			"defaultValue": "192.168.1.0/24"
+        },
+        "subnetName": {
+            "type": "string",
+			"defaultValue": "default"
+        },
+        "subnetPrefix": {
+            "type": "string",
+			"defaultValue": "192.168.1.0/24"
+        },
+        "publicIpAddressType": {
+            "type": "string",
+			"defaultValue": "Dynamic"
+        },
+        "publicIpAddressSku": {
+            "type": "string",
+			"defaultValue": "Basic"
+        }
+    },
+    "variables": {
+        "tags": {
+            "course": "[resourceGroup().name]",
+            "owner": "[parameters('trainerId')]",
+            "pod": "[parameters('virtualMachineName')]"
+        },
+        "vNetName": "[concat(parameters('virtualMachineName'), '-vnet')]",
+        "scriptName": "az_startup",
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', variables('vNetName'))]",
+        "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+        "netIfaceName": "[concat(parameters('virtualMachineName'), '-nic')]",
+        "publicIPName": "[concat(parameters('virtualMachineName'), '-publicip')]",
+        "secGroupName": "[concat(parameters('virtualMachineName'), '-secgroup')]",
+        
+        "secRule-DenyInternet":  [
+            {
+                "name": "AllowVNC",
+                "properties": {
+                    "priority": 300,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "5901"
+                }
+            },
+            {
+                "name": "AllowSSH",
+                "properties": {
+                    "priority": 400,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "22"
+                }
+            },
+            {
+                "name": "AllowStudentRDSSH",
+                "properties": {
+                    "priority": 500,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "2222"
+                }
+            },
+            {
+                "name": "AllowRDP",
+                "properties": {
+                    "priority": 600,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "3389"
+                }
+            },
+            {
+                "name": "AllowNoVNC",
+                "properties": {
+                    "priority": 700,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "6080"
+                }
+            },
+            {
+                "name": "DenyInternetOutbound",
+                "properties": {
+                    "priority": 1000,
+                    "protocol": "*",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "*",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "Internet",
+                    "access": "Deny",
+                    "direction": "Outbound"
+                }
+            }
+        ],  
+        
+        "secRule-AllowInternet": [
+            {
+                "name": "AllowVNC",
+                "properties": {
+                    "priority": 300,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "5901"
+                }
+            },
+            {
+                "name": "AllowSSH",
+                "properties": {
+                    "priority": 400,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "22"
+                }
+            },
+            {
+                "name": "AllowStudentRDSSH",
+                "properties": {
+                    "priority": 500,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "2222"
+                }
+            },
+            {
+                "name": "AllowRDP",
+                "properties": {
+                    "priority": 600,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "3389"
+                }
+            },
+            {
+                "name": "AllowNoVNC",
+                "properties": {
+                    "priority": 700,
+                    "protocol": "TCP",
+                    "access": "Allow",
+                    "direction": "Inbound",
+                    "sourceAddressPrefix": "*",
+                    "sourcePortRange": "*",
+                    "destinationAddressPrefix": "*",
+                    "destinationPortRange": "6080"
+                }
+            } 
+        ]
+    },
+    "resources": [
+        {
+            "name": "[parameters('virtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[parameters('location')]",
+            "tags":  "[variables('tags')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', variables('netIfaceName'))]"
+            ],
+            "properties": {
+                "osProfile": {
+                    "computerName": "studentrd",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "id": "[parameters('imageId')]" 
+                    },
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('hardDiskType')]"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('netIfaceName'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "[variables('netIfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2016-09-01",
+            "location": "[parameters('location')]",
+            "tags":  "[variables('tags')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIPName'))]",
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vNetName'))]",
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('secGroupName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Static",
+                            "privateIpAddress": "192.168.1.100",
+                            "publicIpAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIPName'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('secGroupName'))]"
+                }
+            }
+        },
+        {
+            "name": "[variables('publicIPName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2017-08-01",
+            "location": "[parameters('location')]",
+            "tags":  "[variables('tags')]",
+            "properties": {
+                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('dnsLabelPrefix')]"
+                }
+            },
+            "sku": {
+                "name": "[parameters('publicIpAddressSku')]"
+            }
+        },
+        {
+            "name": "[variables('vNetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2017-08-01",
+            "location": "[parameters('location')]",
+            "tags":  "[variables('tags')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnetPrefix')]"
+                        }
+                    }
+                ]
+            }
+        },
+		{
+            "name": "[variables('secGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2017-06-01",
+            "location": "[parameters('location')]",
+            "tags":  "[variables('tags')]",
+            "properties": {
+                "securityRules": "[if(parameters('allowInternetOutbound'), variables('secRule-AllowInternet'), variables('secRule-DenyInternet'))]"
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "string",
+            "value": "[parameters('adminUsername')]"
+        }
+    }
+}
