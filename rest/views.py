@@ -80,6 +80,21 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = serializers.CourseSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            # delete RG in Azure
+            resource_client = azure.get_client('resource')
+            rg = kwargs.get('slug')
+            azure.delete_resource_group(resource_client, rg)
+        except:
+            print('rg: ' + rg)
+            return Response(
+                { 'Fail to delete resource Group "{}"'.format(rg) }, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        return super(CourseViewSet, self).destroy(request, *args, **kwargs)
+
+
     @detail_route(methods=['get'], url_path='pods',)
     def pods(self, request, slug, pk=None, pod_number=None):
         course = self.get_object()

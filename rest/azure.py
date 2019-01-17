@@ -29,9 +29,10 @@ def cloudError(func):
 
             print('\nRunning {}'.format(func_name))
             async_result = func(*args, **kwargs)
-        except CloudError:
-            print('{} Failed'.format(func_name), traceback.format_exc(), sep='\n')
-            raise 
+        except CloudError as E:
+            if E.error.error != 'ResourceGroupNotFound':
+                print('{} Failed'.format(func_name), traceback.format_exc(), sep='\n')
+                raise 
         except:
             print('{} Unknown Error'.format(func_name), traceback.format_exc(), sep='\n')
             raise
@@ -133,6 +134,14 @@ def create_resource_group(resource_client, rg, params):
             }
     '''
     return resource_client.resource_groups.create_or_update(rg, params) 
+
+
+@cloudError
+def delete_resource_group(resource_client, rg):
+    '''
+        Delete resource group and everything in it
+    '''
+    return resource_client.resource_groups.delete(rg) 
 
 
 @cloudError
