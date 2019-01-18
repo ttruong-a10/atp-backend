@@ -21,8 +21,18 @@ app.autodiscover_tasks()
 app.conf.timezone = 'UTC'
 app.conf.beat_schedule = {
     'sync_azure_vm_sizes_to_db': {
-        'task': 'courses.tasks.sync_azure_vm_sizes_to_db',
+        'task': 'rest.tasks.sync_azure_vm_sizes_to_db',
         'schedule': crontab(minute='0', hour='1'),  # every day at 1am
         'args': ()
-    }
+    },
+    'sync_all_vm_status_in_db': {
+        'task': 'rest.tasks.sync_all_vm_status_in_db',
+        'schedule': crontab(minute='*/1'),  # every 1 min
+        'args': ()
+    },
 }
+
+
+@app.task(bind=True)
+def debug_task(self):
+    print('Request: {0!r}'.format(self.request))

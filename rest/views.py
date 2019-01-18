@@ -89,7 +89,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         except:
             print('rg: ' + rg)
             return Response(
-                { 'Fail to delete resource Group "{}"'.format(rg) }, 
+                { 'Fail to delete resource Group "{}".'.format(rg) }, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         return super(CourseViewSet, self).destroy(request, *args, **kwargs)
@@ -130,8 +130,45 @@ class CourseViewSet(viewsets.ModelViewSet):
         try:
             for pod in pods_queryset:
                 azure_wrapper.startPod(pod)
+        except BaseException as e:
+            print(e)
+            return Response(
+                { 'Fail to start course "{}".'.format(course.name) },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+
+    @detail_route(methods=['post'], url_path='action/stop')
+    def stopCourse(self, request, slug ):
+        course = get_object_or_404(Course, slug=slug)
+
+        pods_queryset = course.get_pods_list()
+        try:
+            for pod in pods_queryset:
+                azure_wrapper.stopPod(pod)
         except:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                { 'Fail to stop course "{}".'.format(course.name) },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    @detail_route(methods=['post'], url_path='action/restart')
+    def restartCourse(self, request, slug ):
+        course = get_object_or_404(Course, slug=slug)
+
+        pods_queryset = course.get_pods_list()
+        try:
+            for pod in pods_queryset:
+                azure_wrapper.restartPod(pod)
+        except:
+            return Response(
+                { 'Fail to restart course "{}".'.format(course.name) },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         return Response(status=status.HTTP_202_ACCEPTED)
 

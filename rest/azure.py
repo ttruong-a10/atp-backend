@@ -188,9 +188,65 @@ def create_vm_from_template(compute_client, resource_client, rg, params):
     )
 
 
+def get_vm_status(compute_client, rg, vm_name):
+    try:
+        vm = compute_client.virtual_machines.get(rg, vm_name, expand='instanceView')
+        vm_status = vm.instance_view.statuses[1].display_status.lower()
+    except CloudError as E:
+        if E.error.error == 'ResourceNotFound':
+            vm_status = 'undeployed'
+        else:
+            vm_status = 'error'
+            
+    if 'deallocated' in vm_status:
+        return 'stopped'
+    elif 'deallocating' in vm_status:
+        return 'stopping'
+    elif 'starting' in vm_status:
+        return 'starting'
+    elif 'running' in vm_status:
+        return 'started'
+    else:
+        return vm_status
+
+
+@cloudError
+def get_vm_fqdn(network_client, rg, public_ip_name):
+    '''
+        Get FQDN of VM
+    '''
+    public_ip = network_client.public_ip_addresses.get(rg, public_ip_name)
+    return public_ip.dns_settings.fqdn
+
+
+@cloudError
+def get_vm_public_ip(network_client, rg, public_ip_name):
+    '''
+        Get Public IP of VM
+    '''
+    public_ip = network_client.public_ip_addresses.get(rg, public_ip_name)
+    return public_ip.ip_address
+
+
 @cloudError
 def start_vm(compute_client, rg, vm_name):
     '''
         Start Virtual Machine
     '''
     return compute_client.virtual_machines.start(rg, vm_name)
+
+
+@cloudError
+def stop_vm(compute_client, rg, vm_name):
+    '''
+        Stop Virtual Machine
+    '''
+    return compute_client.virtual_machines.deallocate(rg, vm_name)
+
+
+@cloudError
+def restart_vm(compute_client, rg, vm_name):
+    '''
+        Restart Virtual Machine
+    '''
+    return compute_client.virtual_machines.restart(rg, vm_name)

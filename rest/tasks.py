@@ -5,9 +5,11 @@ from celery import shared_task, task, group, current_task
 
 # from .models.pod import Pod
 # from .models.course import Course
-from .models.others import VmSize
 from . import choices
-from .azure_wrapper import get_filtered_vm_sizes
+from .models.pod import Pod
+from .models.course import Course
+from .models.others import VmSize
+from .azure_wrapper import get_filtered_vm_sizes, update_pod_status
 from .serializers import VmSizeSerializer
 
 
@@ -93,12 +95,10 @@ def sync_azure_vm_sizes_to_db():
             serializer.is_valid(raise_exception=True)
             serializer.save()
             
-'''
 @task
 def sync_all_vm_status_in_db():
     queryset = Pod.objects.all()
     
     for pod in queryset:
-        vhelpers.update_pod_status(pod)
-'''
+        update_pod_status(pod)
         

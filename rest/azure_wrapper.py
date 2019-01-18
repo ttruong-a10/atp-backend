@@ -66,17 +66,42 @@ def generate_fqdn(vm_name, location):
         return fqdn
 
 
+def update_pod_status(pod):
+    compute_client = get_client('compute')
+    network_client = get_client('network')
+    rg = pod.course.name
+    vm_name = pod.name
+    public_ip = pod.name + '-publicip'
+    
+    vm_status = get_vm_status(compute_client, rg, vm_name)
+    
+    if pod.status != vm_status and vm_status != 'not_found' and vm_status !='undeployed':
+        if vm_status == 'started':
+            # Get FQDN and Public IP
+            public_ip_name = pod.name + '-publicip'
+            fqdn = get_vm_fqdn(network_client, rg, public_ip_name)
+            public_ip = get_vm_public_ip(network_client, rg, public_ip_name)
+
+            # Update DB
+            pod.refresh_from_db()
+            pod.hostname = fqdn
+            pod.public_ip = public_ip
+            
+        pod.status = vm_status
+        pod.save()
+
 def startPod(pod):
     rg = pod.course.name
     compute_client = get_client('compute')
 
     ## If pod has already been deployed, just start the pod
-    if pod.status != 'undeployed':
-        # Start pod
+    if pod.status not in ['undeployed', 'started']:
         start_vm(compute_client, rg, pod.name) 
+        pod.update_status('starting')
+
          
     ## Else create and start pods
-    else:
+    elif pod.status == 'undeployed':
         # Create pod
         resource_client = get_client('resource')
         params = {
@@ -91,4 +116,27 @@ def startPod(pod):
         
         create_vm_from_template(compute_client,resource_client, rg, params) 
         pod.update_status('starting')
+
+
         
+def stopPod(pod):
+    rg = pod.course.name
+    compute_client = get_client('compute')
+
+    if pod.status not in ['undeployed', 'stopped'] :
+        stop_vm(compute_client, rg, pod.name)
+        # clear IP Address
+        pod.refresh_from_db()
+        pod.next_stop = None
+        pod.public_ip = None
+        pod.save()
+        pod.update_status('stopping')
+
+
+def restartPod(pod):
+    rg = pod.course.name
+    compute_client = get_client('compute')
+
+    if pod.status not in ['undeployed', 'stopped', 'stopping'] :
+        restart_vm(compute_client, rg, pod.name)
+        pod.update_status('restarting')
