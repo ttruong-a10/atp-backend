@@ -10,7 +10,8 @@ class AccessTokenSerializer(serializers.ModelSerializer):
     pod = serializers.HyperlinkedRelatedField(
         many=True, 
         read_only=True,
-        view_name='apiv1:pod-detail'
+        view_name='apiv1:pod-detail',
+        lookup_field='slug'
     )
     class Meta:
         fields = (
@@ -60,7 +61,9 @@ class CourseSerializer(serializers.ModelSerializer):
     pods = serializers.HyperlinkedRelatedField(
         many=True, 
         read_only=True,
-        view_name='apiv1:pod-detail'
+        view_name='apiv1:pod-detail',
+        lookup_field='slug'
+        
     )
     owner = serializers.ReadOnlyField(source='owner.username')
     total_pods = serializers.ReadOnlyField(source='get_total_number_pods')

@@ -89,7 +89,7 @@ def sync_azure_vm_sizes_to_db():
     
     ## Fetch and write new data
     for location, dummy in choices.CLOUD_REGION:
-        vm_sizes_available_in_sku = get_filtered_vm_sizes(location);
+        vm_sizes_available_in_sku = get_filtered_vm_sizes(location)
         for vm_size in vm_sizes_available_in_sku:
             serializer = VmSizeSerializer(data=vm_size)
             serializer.is_valid(raise_exception=True)
@@ -101,4 +101,4 @@ def sync_all_vm_status_in_db():
     
     for pod in queryset:
         update_pod_status(pod)
-        
+       

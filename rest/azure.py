@@ -166,7 +166,7 @@ def create_vm_from_template(compute_client, resource_client, rg, params):
     if not check_resource_group_exist(resource_client, rg):
         rg_params = {
             'location': params['location'],
-            'tag': {
+            'tags': {
                 'owner': params['trainerId']
             }
         }
@@ -188,15 +188,24 @@ def create_vm_from_template(compute_client, resource_client, rg, params):
     )
 
 
+@cloudError
+def get_deployment(resource_client, rg, deployment_name):
+    '''
+        Get Azure deployment
+    '''
+    return resource_client.deployments.get(rg, deployment_name) 
+
+
 def get_vm_status(compute_client, rg, vm_name):
     try:
         vm = compute_client.virtual_machines.get(rg, vm_name, expand='instanceView')
         vm_status = vm.instance_view.statuses[1].display_status.lower()
     except CloudError as E:
-        if E.error.error == 'ResourceNotFound':
+        if E.error.error in ['ResourceGroupNotFound','ResourceNotFound']:
             vm_status = 'undeployed'
         else:
-            vm_status = 'error'
+            print(E)
+            vm_status = E.error.error
             
     if 'deallocated' in vm_status:
         return 'stopped'

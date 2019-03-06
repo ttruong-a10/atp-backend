@@ -81,13 +81,12 @@ class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CourseSerializer
 
     def destroy(self, request, *args, **kwargs):
+        rg = kwargs.get('slug')
         try:
             # delete RG in Azure
             resource_client = azure.get_client('resource')
-            rg = kwargs.get('slug')
             azure.delete_resource_group(resource_client, rg)
         except:
-            print('rg: ' + rg)
             return Response(
                 { 'Fail to delete resource Group "{}".'.format(rg) }, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -189,17 +188,33 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class PodViewSet(viewsets.ModelViewSet):
+    lookup_field = 'slug'
     queryset = Pod.objects.all()
     serializer_class = serializers.PodSerializer
 
-    # only show the course owned by current user IF not SuperUser
+    @detail_route(methods=['post'], url_path='action/start')
+    def startPod(self, request, slug ):
+        pod = get_object_or_404(Pod, slug=slug)
+
+        try:
+            azure_wrapper.startPod(pod)
+        except BaseException as e:
+            print(e)
+            return Response(
+                { 'Fail to start course "{}".'.format(pod.name) },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    # only show the pod owned by current user IF not SuperUser
     def get_queryset(self):
         owner = self.request.user
         queryset = self.queryset.all()
         if owner.is_superuser: 
             return queryset
-        else:
-            return queryset.filter(owner=owner)
+        elif not self.request.user.is_anonymous:
+            return queryset.filter(course__owner=owner)
 
 
 class BlueprintViewSet(viewsets.ModelViewSet):
